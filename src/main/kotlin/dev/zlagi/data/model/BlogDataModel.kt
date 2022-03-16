@@ -3,7 +3,7 @@ package dev.zlagi.data.model
 import dev.zlagi.data.entity.EntityBlog
 
 data class BlogDataModel(
-    val id: String,
+    val id: Int,
     val username: String,
     val title: String,
     val description: String,
@@ -12,7 +12,7 @@ data class BlogDataModel(
 ) {
     companion object {
         fun fromEntity(entity: EntityBlog) =
-            BlogDataModel(entity.id.value.toString(),
+            BlogDataModel(entity.id.value,
                 entity.username,
                 entity.title,
                 entity.description,

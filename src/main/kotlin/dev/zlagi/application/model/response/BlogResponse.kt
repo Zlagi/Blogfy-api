@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BlogDomainModel(
-    val id: String,
+    val id: Int,
     val username: String,
     val title: String,
     val description: String,
@@ -29,7 +29,7 @@ data class BlogDomainModel(
 data class BlogResponse(
     override val status: State,
     override val message: String,
-    val pk: String = "",
+    val pk: Int = -1,
     val title: String = "",
     val description: String = "",
     val created: String = "",

@@ -5,14 +5,13 @@ import dev.zlagi.data.entity.EntityBlog
 import dev.zlagi.data.entity.EntityUser
 import dev.zlagi.data.model.BlogDataModel
 import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.dao.id.UUIDTable
+import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.*
 
-object Blogs : UUIDTable(), BlogsDao {
+object Blogs : IntIdTable(), BlogsDao {
     val user = reference("user", Users)
     var username = varchar("username", length = 128)
     var title = varchar("title", length = 128)
@@ -46,18 +45,18 @@ object Blogs : UUIDTable(), BlogsDao {
             .map { BlogDataModel.fromEntity(it) }
     }
 
-    override suspend fun update(blogId: String, title: String, description: String, updated: String): BlogDataModel =
+    override suspend fun update(blogId: Int, title: String, description: String, updated: String): BlogDataModel =
         newSuspendedTransaction(Dispatchers.IO) {
-            EntityBlog[UUID.fromString(blogId)].apply {
+            EntityBlog[blogId].apply {
                 this.title = title
                 this.description = description
                 this.updated = updated
             }.let { BlogDataModel.fromEntity(it) }
         }
 
-    override suspend fun deleteById(blogId: String): Boolean =
+    override suspend fun deleteById(blogId: Int): Boolean =
         newSuspendedTransaction(Dispatchers.IO) {
-            val blog = EntityBlog.findById(UUID.fromString(blogId))
+            val blog = EntityBlog.findById(blogId)
             blog?.run {
                 delete()
                 return@newSuspendedTransaction true
@@ -65,14 +64,14 @@ object Blogs : UUIDTable(), BlogsDao {
             return@newSuspendedTransaction false
         }
 
-    override suspend fun isBlogAuthor(blogId: String, userId: String): Boolean =
+    override suspend fun isBlogAuthor(blogId: Int, userId: String): Boolean =
         newSuspendedTransaction(Dispatchers.IO) {
             EntityBlog.find {
-                (Blogs.id eq UUID.fromString(blogId)) and (user eq UUID.fromString(userId))
+                (Blogs.id eq blogId) and (user eq UUID.fromString(userId))
             }.firstOrNull() != null
         }
 
-    override suspend fun exists(id: String): Boolean = newSuspendedTransaction(Dispatchers.IO) {
-        EntityBlog.findById(UUID.fromString(id)) != null
+    override suspend fun exists(blogId: Int): Boolean = newSuspendedTransaction(Dispatchers.IO) {
+        EntityBlog.findById(blogId) != null
     }
 }

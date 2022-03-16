@@ -161,7 +161,7 @@ abstract class BaseController : KoinComponent {
         }
     }
 
-    internal fun validateUpdateBlogFields(blogId: String?, title: String, description: String) {
+    internal fun validateUpdateBlogFields(blogId: Int?, title: String, description: String) {
         val message = when {
             blogId == null -> "Blog id should not be null or empty"
             title.count() < 3 -> "Title must be at least 3 characters"

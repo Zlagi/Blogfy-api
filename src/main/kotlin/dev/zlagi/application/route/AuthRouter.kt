@@ -51,7 +51,7 @@ fun Route.authApi() {
             call.respond(response.code, response.body)
         }
 
-        post("/refresh-token") {
+        post("/token") {
             val refreshTokenRequest = call.receive<RefreshTokenRequest>()
             val refreshTokenResponse =
                 authController.refreshToken(refreshTokenRequest)

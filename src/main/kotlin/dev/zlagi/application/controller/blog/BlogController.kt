@@ -55,7 +55,7 @@ class DefaultBlogController : BaseController(), BlogController, KoinComponent {
         return try {
             val userId = ctx.principal<UserPrincipal>()?.user?.id
             val username = ctx.principal<UserPrincipal>()?.user?.username
-            validateUpdateBlogFields("", blogRequest.title, blogRequest.description)
+            validateUpdateBlogFields(0, blogRequest.title, blogRequest.description)
             val blog =
                 blogDao.store(userId!!, username!!, blogRequest.title, blogRequest.description, getConvertedCurrentTime(), null)
             BlogResponse.success(
@@ -72,9 +72,9 @@ class DefaultBlogController : BaseController(), BlogController, KoinComponent {
         ctx: ApplicationCall
     ): BlogResponse {
         return try {
-            val blogId = ctx.parameters["blogId"]
-            validateUpdateBlogFields(blogId, blogRequest.title, blogRequest.description)
-            blogDao.update(blogId!!, blogRequest.title, blogRequest.description, getConvertedCurrentTime()).let {
+            val blogId = ctx.parameters["blogId"]?.toInt()
+            validateUpdateBlogFields(blogId!!, blogRequest.title, blogRequest.description)
+            blogDao.update(blogId, blogRequest.title, blogRequest.description, getConvertedCurrentTime()).let {
                 BlogResponse.success(
                     "Updated",
                     BlogDomainModel.fromData(it)
@@ -91,7 +91,7 @@ class DefaultBlogController : BaseController(), BlogController, KoinComponent {
 
     override suspend fun deleteBlog(ctx: ApplicationCall): GeneralResponse {
         return try {
-            val blogId = ctx.parameters["blogId"]
+            val blogId = ctx.parameters["blogId"]?.toInt()
 
             if (!blogDao.exists(blogId!!)) {
                 throw BlogNotFoundException("Blog not exist with ID '$blogId'")
@@ -117,7 +117,7 @@ class DefaultBlogController : BaseController(), BlogController, KoinComponent {
 
     override suspend fun checkBlogAuthor(ctx: ApplicationCall): GeneralResponse {
         return try {
-            val blogId = ctx.parameters["blogId"]
+            val blogId = ctx.parameters["blogId"]?.toInt()
             val userId = ctx.principal<UserPrincipal>()?.user?.id
 
             if (blogDao.isBlogAuthor(blogId!!, userId!!)) {
