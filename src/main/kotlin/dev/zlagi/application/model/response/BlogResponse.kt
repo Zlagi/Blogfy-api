@@ -29,7 +29,12 @@ data class BlogDomainModel(
 data class BlogResponse(
     override val status: State,
     override val message: String,
-    val blog: BlogDomainModel? = null
+    val pk: String = "",
+    val title: String = "",
+    val description: String = "",
+    val created: String = "",
+    val updated: String? = "",
+    val username: String = ""
 ) : Response {
     companion object {
 
@@ -43,10 +48,15 @@ data class BlogResponse(
             message
         )
 
-        fun success(message: String, blog: BlogDomainModel?) = BlogResponse(
+        fun success(message: String, blog: BlogDomainModel) = BlogResponse(
             State.SUCCESS,
             message,
-            blog
+            blog.id,
+            blog.title,
+            blog.description,
+            blog.created,
+            blog.updated,
+            blog.username
         )
     }
 }

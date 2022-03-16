@@ -35,15 +35,15 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                 val tokens = tokenProvider.createTokens(user)
                 AuthResponse.success(
                     "Sign in successfully",
-                    tokens.accessToken,
-                    tokens.refreshToken
+                    tokens.access_token,
+                    tokens.refresh_token
                 )
             } ?: userDao.storeUser(idpAuthenticationRequest.email, idpAuthenticationRequest.username, null).let {
                 val tokens = tokenProvider.createTokens(it)
                 AuthResponse.success(
                     "Sign up successfully",
-                    tokens.accessToken,
-                    tokens.refreshToken,
+                    tokens.access_token,
+                    tokens.refresh_token,
                 )
             }
         } catch (e: BadRequestException) {
@@ -59,8 +59,8 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                 val tokens = tokenProvider.createTokens(it)
                 AuthResponse.success(
                     "Sign in successfully",
-                    tokens.accessToken,
-                    tokens.refreshToken
+                    tokens.access_token,
+                    tokens.refresh_token
                 )
             } ?: throw UnauthorizedActivityException("Invalid credentials")
         } catch (e: BadRequestException) {
@@ -79,8 +79,8 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
             val tokens = tokenProvider.createTokens(user)
             AuthResponse.success(
                 "Sign up successfully",
-                tokens.accessToken,
-                tokens.refreshToken
+                tokens.access_token,
+                tokens.refresh_token
             )
         } catch (e: BadRequestException) {
             AuthResponse.failed(e.message)
@@ -131,8 +131,8 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                     refreshTokensDao.store(userId, token, expirationTime)
                     AuthResponse.success(
                         "Tokens updated",
-                        tokens.accessToken,
-                        tokens.refreshToken,
+                        tokens.access_token,
+                        tokens.refresh_token,
                     )
                 } ?: throw UnauthorizedActivityException("Invalid credentials")
             } ?: throw UnauthorizedActivityException("Invalid credentials")
@@ -198,7 +198,7 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                 email.subject = "Complete Password Reset!"
                 email.setMsg(
                     "To complete the password reset process, " +
-                            "please click here: \n https://blogfy-server.herokuapp.com/auth/confirm-reset-password?token=${token.accessToken}"
+                            "please click here: \n https://blogfy-server.herokuapp.com/auth/confirm-reset-password?token=${token.access_token}"
                 )
                 email.addTo("")
                 email.send()
