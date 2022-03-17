@@ -15,24 +15,24 @@ object Tokens : UUIDTable(), TokenDao {
     val token = varchar("token", 512)
     val expirationTime = varchar("expiration_time", 128)
 
-    override suspend fun store(userId: String, token: String, expirationTime: String): String =
+    override suspend fun store(userId: Int, token: String, expirationTime: String): String =
         newSuspendedTransaction(Dispatchers.IO) {
             EntityToken.new {
-                this.user = EntityUser[UUID.fromString(userId)]
+                this.user = EntityUser[userId]
                 this.token = token
                 this.expirationTime = expirationTime
             }.id.value.toString()
         }
 
-    override suspend fun getAllById(userId: String): List<Token> = newSuspendedTransaction(Dispatchers.IO) {
-        EntityToken.find { user eq UUID.fromString(userId) }
+    override suspend fun getAllById(userId: Int): List<Token> = newSuspendedTransaction(Dispatchers.IO) {
+        EntityToken.find { user eq userId }
             .sortedByDescending { it.id }
             .map { Token.fromEntity(it) }
     }
 
-    override suspend fun exists(userId: String, token: String): Boolean = newSuspendedTransaction(Dispatchers.IO) {
+    override suspend fun exists(userId: Int, token: String): Boolean = newSuspendedTransaction(Dispatchers.IO) {
         EntityToken.find {
-            ((Tokens.token eq token) and (user eq UUID.fromString(userId)))
+            ((Tokens.token eq token) and (user eq userId))
         }.firstOrNull() != null
     }
 

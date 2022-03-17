@@ -1,4 +1,4 @@
-package dev.zlagi.application.route
+package dev.zlagi.application.router
 
 import dev.zlagi.application.controller.blog.BlogController
 import dev.zlagi.application.model.request.BlogRequest

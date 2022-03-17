@@ -1,7 +1,7 @@
 package dev.zlagi.application.plugins
 
-import dev.zlagi.application.route.authApi
-import dev.zlagi.application.route.blogApi
+import dev.zlagi.application.router.authApi
+import dev.zlagi.application.router.blogApi
 import io.ktor.application.*
 import io.ktor.routing.*
 

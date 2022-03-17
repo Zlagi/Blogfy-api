@@ -41,7 +41,7 @@ fun Authentication.Configuration.firebase(
             val token = provider.token(call) ?: throw FirebaseAuthException(
                 FirebaseException(
                     ErrorCode.UNAUTHENTICATED,
-                    "Firebase token not found",
+                    "Authentication failed: Firebase token not found",
                     null
                 )
             )

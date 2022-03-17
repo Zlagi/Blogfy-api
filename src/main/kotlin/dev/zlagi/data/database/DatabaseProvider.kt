@@ -34,7 +34,7 @@ class DatabaseProvider : DatabaseProviderContract, KoinComponent {
         }
     }
 
-    /*private fun hikari(): HikariDataSource {
+/*    private fun hikari(): HikariDataSource {
         HikariConfig().run {
             driverClassName = driverClass
             jdbcUrl = "jdbc:postgresql://${host}:${port}/${dbname}"
@@ -56,8 +56,7 @@ class DatabaseProvider : DatabaseProviderContract, KoinComponent {
         const val user = "postgres"
         const val dbpassword = "root"
     }*/
-
-    fun hikari(): HikariDataSource {
+    private fun hikari(): HikariDataSource {
         val config = HikariConfig()
         config.driverClassName = System.getenv("JDBC_DRIVER")
         config.isAutoCommit = false

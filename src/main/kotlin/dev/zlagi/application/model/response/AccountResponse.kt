@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class AccountResponse(
     override val status: State,
     override val message: String,
-    val userId: String? = null,
+    val id: Int? = null,
     val username: String? = null,
     val email: String? = null
 ) : Response {
@@ -27,7 +27,7 @@ data class AccountResponse(
             message
         )
 
-        fun success(message: String, userId: String, email: String, username: String) = AccountResponse(
+        fun success(message: String, userId: Int, email: String, username: String) = AccountResponse(
             State.SUCCESS,
             message,
             userId,

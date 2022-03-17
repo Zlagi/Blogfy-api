@@ -40,33 +40,33 @@ fun Application.configureSecurity(
                         } catch (e: TokenExpiredException) {
                             call.respond(
                                 HttpStatusCode.Unauthorized,
-                                GeneralResponse.failed("Expired token")
+                                GeneralResponse.failed("Authentication failed: Access token expired")
                             )
                         } catch (e: SignatureVerificationException) {
                             call.respond(
                                 HttpStatusCode.BadRequest,
-                                GeneralResponse.failed("Invalid token format")
+                                GeneralResponse.failed("Authentication failed: Failed to parse Access token")
                             )
                         } catch (e: JWTDecodeException) {
                             call.respond(
                                 HttpStatusCode.BadRequest,
-                                GeneralResponse.failed("Invalid token format")
+                                GeneralResponse.failed("Authentication failed: Failed to parse Access token")
                             )
                         }
                     } else call.respond(
                         HttpStatusCode.BadRequest,
-                        GeneralResponse.unauthorized("Token should not be empty")
+                        GeneralResponse.failed("Authentication failed: Access token not found")
                     )
                 } ?: call.respond(
-                    HttpStatusCode.Unauthorized, GeneralResponse.unauthorized("No authorization header")
+                    HttpStatusCode.Unauthorized, GeneralResponse.unauthorized("Authentication failed: No authorization header found")
                 )
                 GeneralResponse.unauthorized("Unauthorized")
             }
 
             validate { credential ->
-                credential.payload.getClaim("userId").asString()?.let { userId ->
+                credential.payload.getClaim("userId").asInt()?.let { userId ->
                     // do database query to find Principal subclass
-                    val user = userDao.findByUUID(userId)
+                    val user = userDao.findByID(userId)
                     user?.let {
                         UserPrincipal(it)
                     }

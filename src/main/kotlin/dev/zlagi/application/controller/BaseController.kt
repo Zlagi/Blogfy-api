@@ -97,7 +97,7 @@ abstract class BaseController : KoinComponent {
 
     internal fun validateRefreshTokenFieldsOrThrowException(token: String) {
         val message = when {
-            (token.isBlank()) -> "Token field should not be blank"
+            (token.isBlank()) -> "Authentication failed: Token field should not be blank"
             else -> return
         }
 
@@ -106,28 +106,28 @@ abstract class BaseController : KoinComponent {
 
     internal fun validateSignOutFieldsOrThrowException(token: String) {
         val message = when {
-            (token.isBlank()) -> "Token field should not be blank"
+            (token.isBlank()) -> "Authentication failed: Token field should not be blank"
             else -> return
         }
         throw BadRequestException(message)
     }
 
     internal fun validateRefreshTokenType(tokenType: String) {
-        if (tokenType != "refreshToken") throw BadRequestException("Invalid token type")
+        if (tokenType != "refreshToken") throw BadRequestException("Authentication failed: Invalid token type")
     }
 
     internal fun validateAccessTokenType(tokenType: String) {
-        if (tokenType != "accessToken") throw BadRequestException("Invalid token type")
+        if (tokenType != "accessToken") throw BadRequestException("Authentication failed: Invalid token type")
     }
 
-    internal suspend fun verifyTokenRevocation(token: String, userId: String) {
-        if (refreshTokensDao.exists(userId, token)) throw UnauthorizedActivityException("Token has been revoked")
+    internal suspend fun verifyTokenRevocation(token: String, userId: Int) {
+        if (refreshTokensDao.exists(userId, token)) throw UnauthorizedActivityException("Authentication failed: Token has been revoked")
     }
 
     internal fun verifyPasswordOrThrowException(password: String, user: User) {
         user.password?.let {
             if (!passwordEncryption.validatePassword(password, it))
-                throw UnauthorizedActivityException("Invalid credentials")
+                throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
         }
     }
 
@@ -138,22 +138,22 @@ abstract class BaseController : KoinComponent {
 
         try {
             tokenProvider.verifyToken(token)?.let { userId ->
-                userDao.findByUUID(userId)?.let {
+                userDao.findByID(userId)?.let {
                     refreshTokensDao.store(
                         it.id,
                         token,
                         convertedExpirationTime
                     )
-                } ?: throw UnauthorizedActivityException("Invalid credentials")
-            } ?: throw UnauthorizedActivityException("Invalid credentials")
+                } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
+            } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
         } catch (uae: UnauthorizedActivityException) {
             AuthResponse.unauthorized(uae.message)
         }
     }
 
-    internal suspend fun deleteExpiredTokens(userId: String, currentTime: String) {
-        refreshTokensDao.getAllById(userId).let { refreshtokens ->
-            refreshtokens.forEach {
+    internal suspend fun deleteExpiredTokens(userId: Int, currentTime: String) {
+        refreshTokensDao.getAllById(userId).let { tokens ->
+            tokens.forEach {
                 if (it.expirationTime < currentTime) {
                     refreshTokensDao.deleteById(it.id)
                 }
@@ -173,7 +173,7 @@ abstract class BaseController : KoinComponent {
 
     internal suspend fun verifyEmail(email: String) {
         if (!userDao.isEmailAvailable(email)) {
-            throw BadRequestException("Email is not available")
+            throw BadRequestException("Authentication failed: Email is not available")
         }
     }
 
@@ -190,10 +190,6 @@ abstract class BaseController : KoinComponent {
 
     internal fun getTokenType(token: String): String {
         return tokenProvider.verifyTokenType(token)
-    }
-
-    internal fun checksBlogResult(blogs: List<BlogDataModel>) {
-        if (blogs.isEmpty()) throw BadRequestException("No blogs found")
     }
 
     internal fun checkPageNumber(page: Int, blogs: List<List<BlogDataModel>>) {

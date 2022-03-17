@@ -4,11 +4,10 @@ import dev.zlagi.data.dao.UserDao
 import dev.zlagi.data.entity.EntityUser
 import dev.zlagi.data.model.User
 import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.dao.id.UUIDTable
+import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import java.util.*
 
-object Users : UUIDTable(), UserDao {
+object Users : IntIdTable(), UserDao {
     val email = varchar("email", length = 30).uniqueIndex()
     val username = varchar("username", length = 30)
     val password = text("password").nullable()
@@ -24,9 +23,9 @@ object Users : UUIDTable(), UserDao {
             }
         }
 
-    override suspend fun findByUUID(userId: String): User? =
+    override suspend fun findByID(userId: Int): User? =
         newSuspendedTransaction(Dispatchers.IO) {
-            EntityUser.findById(UUID.fromString(userId))
+            EntityUser.findById(userId)
         }?.let {
             User.fromEntity(it)
         }
@@ -44,9 +43,9 @@ object Users : UUIDTable(), UserDao {
         } == null
     }
 
-    override suspend fun updatePassword(userId: String, password: String) {
+    override suspend fun updatePassword(userId: Int, password: String) {
         newSuspendedTransaction(Dispatchers.IO) {
-            EntityUser[UUID.fromString(userId)].apply {
+            EntityUser[userId].apply {
                 this.password = password
             }.id.value.toString()
         }

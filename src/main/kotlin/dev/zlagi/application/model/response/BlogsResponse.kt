@@ -21,7 +21,7 @@ data class BlogsResponse(
             message
         )
 
-        fun success(pagination: Pagination, blogs: List<BlogDomainModel>, message: String) =
+        fun success(pagination: Pagination?, blogs: List<BlogDomainModel>, message: String) =
             BlogsResponse(
                 State.SUCCESS,
                 message,

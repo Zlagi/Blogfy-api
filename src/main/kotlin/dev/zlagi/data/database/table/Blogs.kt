@@ -9,7 +9,6 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import java.util.*
 
 object Blogs : IntIdTable(), BlogsDao {
     val user = reference("user", Users)
@@ -20,7 +19,7 @@ object Blogs : IntIdTable(), BlogsDao {
     var updated = varchar("updated", length = 48).nullable()
 
     override suspend fun store(
-        userId: String,
+        userId: Int,
         username: String,
         title: String,
         description: String,
@@ -29,7 +28,7 @@ object Blogs : IntIdTable(), BlogsDao {
     ): BlogDataModel =
         newSuspendedTransaction(Dispatchers.IO) {
             EntityBlog.new {
-                this.user = EntityUser[UUID.fromString(userId)]
+                this.user = EntityUser[userId]
                 this.username = username
                 this.title = title
                 this.description = description
@@ -64,10 +63,10 @@ object Blogs : IntIdTable(), BlogsDao {
             return@newSuspendedTransaction false
         }
 
-    override suspend fun isBlogAuthor(blogId: Int, userId: String): Boolean =
+    override suspend fun isBlogAuthor(blogId: Int, userId: Int): Boolean =
         newSuspendedTransaction(Dispatchers.IO) {
             EntityBlog.find {
-                (Blogs.id eq blogId) and (user eq UUID.fromString(userId))
+                (Blogs.id eq blogId) and (user eq userId)
             }.firstOrNull() != null
         }
 

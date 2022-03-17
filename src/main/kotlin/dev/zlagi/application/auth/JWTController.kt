@@ -20,8 +20,8 @@ object JWTController : TokenProvider {
         .withIssuer(issuer)
         .build()
 
-    override fun verifyToken(token: String): String? {
-        return verifier.verify(token).claims["userId"]?.asString()
+    override fun verifyToken(token: String): Int? {
+        return verifier.verify(token).claims["userId"]?.asInt()
     }
 
     override fun getTokenExpiration(token: String): Date {
@@ -56,14 +56,6 @@ object JWTController : TokenProvider {
         .withExpiresAt(expiration)
         .sign(algorithm)
 
-    private fun createResetToken(user: User, expiration: Date) = JWT.create()
-        .withSubject("Authentication")
-        .withIssuer(issuer)
-        .withClaim("userId", user.id)
-        .withClaim("tokenType", "resetToken")
-        .withExpiresAt(expiration)
-        .sign(algorithm)
-
     /**
      * Calculate the expiration Date based on current time + the given validity
      */
@@ -73,6 +65,6 @@ object JWTController : TokenProvider {
 interface TokenProvider {
     fun createTokens(user: User): TokenResponse
     fun verifyTokenType(token: String): String
-    fun verifyToken(token: String): String?
+    fun verifyToken(token: String): Int?
     fun getTokenExpiration(token: String): Date
 }

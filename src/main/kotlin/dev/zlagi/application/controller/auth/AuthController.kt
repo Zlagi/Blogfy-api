@@ -62,7 +62,7 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                     tokens.access_token,
                     tokens.refresh_token
                 )
-            } ?: throw UnauthorizedActivityException("Invalid credentials")
+            } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
         } catch (e: BadRequestException) {
             AuthResponse.failed(e.message)
         } catch (e: UnauthorizedActivityException) {
@@ -96,19 +96,19 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                 validateRefreshTokenType(tokenType)
                 verifyTokenRevocation(token, userId)
                 deleteExpiredTokens(userId, getConvertedCurrentTime())
-                userDao.findByUUID(userId)?.let {
+                userDao.findByID(userId)?.let {
                     storeToken(token)
                     GeneralResponse.success(
                         "Sign out successfully"
                     )
-                } ?: throw UnauthorizedActivityException("Invalid credentials")
-            } ?: throw UnauthorizedActivityException("Invalid credentials")
+                } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
+            } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
         } catch (e: TokenExpiredException) {
-            GeneralResponse.failed("Expired token")
+            GeneralResponse.failed("Authentication failed: Refresh token expired")
         } catch (e: SignatureVerificationException) {
-            GeneralResponse.failed("Invalid token format")
+            GeneralResponse.failed("Authentication failed: Failed to parse Refresh token")
         } catch (e: JWTDecodeException) {
-            GeneralResponse.failed("Invalid token format")
+            GeneralResponse.failed("Authentication failed: Failed to parse Refresh token")
         } catch (e: BadRequestException) {
             GeneralResponse.failed(e.message)
         } catch (e: UnauthorizedActivityException) {
@@ -126,7 +126,7 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                 validateRefreshTokenType(tokenType)
                 verifyTokenRevocation(token, userId)
                 deleteExpiredTokens(userId, getConvertedCurrentTime())
-                userDao.findByUUID(userId)?.let {
+                userDao.findByID(userId)?.let {
                     val tokens = tokenProvider.createTokens(it)
                     refreshTokensDao.store(userId, token, expirationTime)
                     AuthResponse.success(
@@ -134,14 +134,14 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                         tokens.access_token,
                         tokens.refresh_token,
                     )
-                } ?: throw UnauthorizedActivityException("Invalid credentials")
-            } ?: throw UnauthorizedActivityException("Invalid credentials")
+                } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
+            } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
         } catch (e: TokenExpiredException) {
-            AuthResponse.failed("Expired token")
+            AuthResponse.failed("Authentication failed: Refresh token expired")
         } catch (e: SignatureVerificationException) {
-            AuthResponse.failed("Invalid token format")
+            AuthResponse.failed("Authentication failed: Failed to parse Refresh token")
         } catch (e: JWTDecodeException) {
-            AuthResponse.failed("Invalid token format")
+            AuthResponse.failed("Authentication failed: Failed to parse Refresh token")
         } catch (e: BadRequestException) {
             AuthResponse.failed(e.message)
         } catch (e: UnauthorizedActivityException) {
@@ -152,7 +152,7 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
     override suspend fun getAccountById(ctx: ApplicationCall): AccountResponse {
         return try {
             val userId = ctx.principal<UserPrincipal>()?.user?.id
-            userDao.findByUUID(userId!!)?.let {
+            userDao.findByID(userId!!)?.let {
                 AccountResponse.success("User found", it.id, it.username, it.email)
             } ?: throw UnauthorizedActivityException("User do not exist")
         } catch (e: UnauthorizedActivityException) {
@@ -160,21 +160,24 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
         }
     }
 
-    override suspend fun updateAccountPassword(updatePasswordRequest: UpdatePasswordRequest, ctx: ApplicationCall): GeneralResponse {
+    override suspend fun updateAccountPassword(
+        updatePasswordRequest: UpdatePasswordRequest,
+        ctx: ApplicationCall
+    ): GeneralResponse {
         return try {
             val userId = ctx.principal<UserPrincipal>()?.user?.id
             val encryptedPassword = getEncryptedPassword(updatePasswordRequest.currentPassword)
             validateUpdatePasswordFieldsOrThrowException(updatePasswordRequest)
-            userDao.findByUUID(userId!!)?.let { user ->
+            userDao.findByID(userId!!)?.let { user ->
                 verifyPasswordOrThrowException(updatePasswordRequest.currentPassword, user)
                 userDao.updatePassword(user.id, encryptedPassword)
                 GeneralResponse.success(
                     "Password updated",
                 )
-            } ?: throw UnauthorizedActivityException("Invalid credentials")
+            } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
         } catch (e: UnauthorizedActivityException) {
             GeneralResponse.unauthorized(e.message)
-        }catch (e: BadRequestException) {
+        } catch (e: BadRequestException) {
             GeneralResponse.failed(e.message)
         }
     }
@@ -205,7 +208,7 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                 GeneralResponse.success(
                     "Request to reset password received. Check your inbox for the reset link.",
                 )
-            } ?: throw UnauthorizedActivityException("Invalid credentials")
+            } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
         } catch (e: BadRequestException) {
             GeneralResponse.failed(e.message)
         } catch (e: UnauthorizedActivityException) {
@@ -225,21 +228,21 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                 val encryptedPassword = getEncryptedPassword(updatePasswordRequest.currentPassword)
                 verifyTokenRevocation(token, userId)
                 validateAccessTokenType(getTokenType(token))
-                userDao.findByUUID(userId)?.let { user ->
+                userDao.findByID(userId)?.let { user ->
                     verifyPasswordOrThrowException(updatePasswordRequest.currentPassword, user)
                     storeToken(token)
                     userDao.updatePassword(userId, encryptedPassword)
                     GeneralResponse.success(
                         "Password updated"
                     )
-                } ?: throw UnauthorizedActivityException("Invalid credentials")
-            } ?: throw UnauthorizedActivityException("Invalid credentials")
+                } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
+            } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
         } catch (e: TokenExpiredException) {
-            GeneralResponse.failed("Expired token")
+            GeneralResponse.failed("Reset link has been revoked")
         } catch (e: SignatureVerificationException) {
-            GeneralResponse.failed("Invalid token format")
+            GeneralResponse.failed("Authentication failed: Failed to parse token")
         } catch (e: JWTDecodeException) {
-            GeneralResponse.failed("Invalid token format")
+            GeneralResponse.failed("Authentication failed: Failed to parse token")
         } catch (e: BadRequestException) {
             GeneralResponse.failed(e.message)
         } catch (e: UnauthorizedActivityException) {
@@ -255,7 +258,11 @@ interface AuthController {
     suspend fun signOut(revokeTokenRequest: RevokeTokenRequest): GeneralResponse
     suspend fun refreshToken(refreshTokenRequest: RefreshTokenRequest): AuthResponse
     suspend fun getAccountById(ctx: ApplicationCall): AccountResponse
-    suspend fun updateAccountPassword(updatePasswordRequest: UpdatePasswordRequest, ctx: ApplicationCall): GeneralResponse
+    suspend fun updateAccountPassword(
+        updatePasswordRequest: UpdatePasswordRequest,
+        ctx: ApplicationCall
+    ): GeneralResponse
+
     suspend fun resetPassword(userEmail: String): GeneralResponse
     suspend fun confirmPasswordReset(
         tokenParameters: Parameters,

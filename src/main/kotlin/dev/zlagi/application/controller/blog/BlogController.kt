@@ -23,9 +23,8 @@ class DefaultBlogController : BaseController(), BlogController, KoinComponent {
             val page = parameters["page"]?.toInt() ?: 1
             val limit = parameters["limit"]?.toInt() ?: 10
             val search = parameters["search_query"] ?: ""
-            val cachedBlogs = blogDao.searchByQuery(search)
-            checksBlogResult(cachedBlogs)
-            val windowedBlogs = cachedBlogs.windowed(
+            val blogs = blogDao.searchByQuery(search)
+            val windowedBlogs = blogs.windowed(
                 size = limit,
                 step = limit,
                 partialWindows = true
@@ -34,7 +33,7 @@ class DefaultBlogController : BaseController(), BlogController, KoinComponent {
             val paginatedBlogs = provideBlogs(windowedBlogs, page)
             BlogsResponse.success(
                 Pagination(
-                    cachedBlogs.size, page, windowedBlogs.size, Links(
+                    blogs.size, page, windowedBlogs.size, Links(
                         calculatePage(windowedBlogs, page)["previous"],
                         calculatePage(windowedBlogs, page)["next"]
                     )
