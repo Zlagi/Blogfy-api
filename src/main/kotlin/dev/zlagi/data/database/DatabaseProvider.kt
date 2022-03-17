@@ -13,7 +13,6 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils.create
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.core.component.KoinComponent
-import java.net.URI
 import kotlin.coroutines.CoroutineContext
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -34,7 +33,7 @@ class DatabaseProvider : DatabaseProviderContract, KoinComponent {
         }
     }
 
-/*    private fun hikari(): HikariDataSource {
+    private fun hikari(): HikariDataSource {
         HikariConfig().run {
             driverClassName = driverClass
             jdbcUrl = "jdbc:postgresql://${host}:${port}/${dbname}"
@@ -55,8 +54,9 @@ class DatabaseProvider : DatabaseProviderContract, KoinComponent {
         const val dbname = "blogfy"
         const val user = "postgres"
         const val dbpassword = "root"
-    }*/
-    private fun hikari(): HikariDataSource {
+    }
+/*
+    fun hikari(): HikariDataSource {
         val config = HikariConfig()
         config.driverClassName = System.getenv("JDBC_DRIVER")
         config.isAutoCommit = false
@@ -73,7 +73,7 @@ class DatabaseProvider : DatabaseProviderContract, KoinComponent {
         config.validate()
 
         return HikariDataSource(config)
-    }
+    }*/
 
 }
 
