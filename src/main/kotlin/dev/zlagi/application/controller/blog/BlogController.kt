@@ -46,7 +46,7 @@ class DefaultBlogController : BaseController(), BlogController, KoinComponent {
                 "Blogs found"
             )
         } catch (e: BadRequestException) {
-            BlogsResponse.notFound(e.message)
+            BlogsResponse.success(null, emptyList(), e.message)
         }
     }
 

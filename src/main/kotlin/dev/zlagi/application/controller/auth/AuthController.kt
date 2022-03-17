@@ -175,10 +175,10 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                     "Password updated",
                 )
             } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
-        } catch (e: UnauthorizedActivityException) {
-            GeneralResponse.unauthorized(e.message)
         } catch (e: BadRequestException) {
             GeneralResponse.failed(e.message)
+        } catch (e: UnauthorizedActivityException) {
+            GeneralResponse.success(e.message)
         }
     }
 
