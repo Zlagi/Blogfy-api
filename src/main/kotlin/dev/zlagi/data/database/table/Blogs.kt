@@ -44,12 +44,14 @@ object Blogs : IntIdTable(), BlogsDao {
             .map { BlogDataModel.fromEntity(it) }
     }
 
-    override suspend fun update(blogId: Int, title: String, description: String, updated: String): BlogDataModel =
+    override suspend fun update(blogId: Int, title: String, description: String, updated: String?): BlogDataModel =
         newSuspendedTransaction(Dispatchers.IO) {
             EntityBlog[blogId].apply {
                 this.title = title
                 this.description = description
-                this.updated = updated
+                updated?.let {
+                    this.updated = it
+                }
             }.let { BlogDataModel.fromEntity(it) }
         }
 

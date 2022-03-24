@@ -86,15 +86,6 @@ abstract class BaseController : KoinComponent {
         if (token == null) throw BadRequestException("Missing token query parameter")
     }
 
-    internal fun validateIdpAuthenticationFieldsOrThrowException(email: String) {
-        val message = when {
-            (email.isBlank()) -> "Email field should not be blank"
-            else -> return
-        }
-
-        throw BadRequestException(message)
-    }
-
     internal fun validateRefreshTokenFieldsOrThrowException(token: String) {
         val message = when {
             (token.isBlank()) -> "Authentication failed: Token field should not be blank"
@@ -128,7 +119,7 @@ abstract class BaseController : KoinComponent {
         user.password?.let {
             if (!passwordEncryption.validatePassword(password, it))
                 throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
-        }
+        }?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
     }
 
     internal suspend fun storeToken(token: String) {
@@ -159,6 +150,17 @@ abstract class BaseController : KoinComponent {
                 }
             }
         }
+    }
+
+    internal fun validateCreateBlogFields(blogId: Int?, title: String, description: String, creationTime: String) {
+        val message = when {
+            blogId == null -> "Blog id should not be null or empty"
+            title.count() < 3 -> "Title must be at least 3 characters"
+            description.count() < 7 -> "Description must be at least 8 characters"
+            creationTime.isBlank() -> "Creation time must not be blank"
+            else -> return
+        }
+        throw BadRequestException(message)
     }
 
     internal fun validateUpdateBlogFields(blogId: Int?, title: String, description: String) {

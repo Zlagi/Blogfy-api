@@ -5,10 +5,13 @@ import dev.zlagi.application.controller.BaseController
 import dev.zlagi.application.exception.BadRequestException
 import dev.zlagi.application.exception.BlogNotFoundException
 import dev.zlagi.application.model.request.BlogRequest
+import dev.zlagi.application.model.request.Notification
 import dev.zlagi.application.model.response.*
 import dev.zlagi.data.dao.BlogsDao
 import io.ktor.application.*
 import io.ktor.auth.*
+import io.ktor.client.*
+import io.ktor.client.request.*
 import io.ktor.http.*
 import org.jetbrains.exposed.dao.exceptions.EntityNotFoundException
 import org.koin.core.component.KoinComponent
@@ -18,8 +21,12 @@ class DefaultBlogController : BaseController(), BlogController, KoinComponent {
 
     private val blogDao by inject<BlogsDao>()
 
-    override suspend fun getBlogsByQuery(parameters: Parameters, ctx: ApplicationCall): BlogsResponse {
+    override suspend fun getBlogsByQuery(parameters: Parameters, ctx: ApplicationCall): Response {
         return try {
+            val header = ctx.request.headers["Authorization"]
+            header?.replace("Bearer ", "")?.let { token ->
+                validateAccessTokenType(getTokenType(token))
+            }
             val page = parameters["page"]?.toInt() ?: 1
             val limit = parameters["limit"]?.toInt() ?: 10
             val search = parameters["search_query"] ?: ""
@@ -46,56 +53,89 @@ class DefaultBlogController : BaseController(), BlogController, KoinComponent {
                 "Blogs found"
             )
         } catch (e: BadRequestException) {
-            BlogsResponse.success(null, emptyList(), e.message)
+            GeneralResponse.success(e.message)
         }
     }
 
-    override suspend fun storeBlog(blogRequest: BlogRequest, ctx: ApplicationCall): BlogResponse {
+    override suspend fun sendNotification(httpClient: HttpClient, apiKey: String, notification: Notification): Response {
         return try {
+            httpClient.post<String>{
+                url(BlogController.NOTIFICATIONS)
+                contentType(ContentType.Application.Json)
+                header("Authorization", "Basic $apiKey")
+                body = notification
+            }
+            GeneralResponse.success("Notification sent")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            GeneralResponse.failed("Error occurred")
+        }
+    }
+
+    override suspend fun storeBlog(blogRequest: BlogRequest, ctx: ApplicationCall): Response {
+        return try {
+            val header = ctx.request.headers["Authorization"]
+            header?.replace("Bearer ", "")?.let { token ->
+                validateAccessTokenType(getTokenType(token))
+            }
             val userId = ctx.principal<UserPrincipal>()?.user?.id
             val username = ctx.principal<UserPrincipal>()?.user?.username
-            validateUpdateBlogFields(0, blogRequest.title, blogRequest.description)
+            validateCreateBlogFields(0, blogRequest.title, blogRequest.description, blogRequest.creationTime)
             val blog =
-                blogDao.store(userId!!, username!!, blogRequest.title, blogRequest.description, getConvertedCurrentTime(), null)
+                blogDao.store(
+                    userId!!,
+                    username!!,
+                    blogRequest.title,
+                    blogRequest.description,
+                    blogRequest.creationTime,
+                    null
+                )
             BlogResponse.success(
                 "Created",
                 BlogDomainModel.fromData(blog)
             )
         } catch (e: BadRequestException) {
-            BlogResponse.notFound(e.message)
+            GeneralResponse.failed(e.message)
         }
     }
 
     override suspend fun updateBlog(
         blogRequest: BlogRequest,
         ctx: ApplicationCall
-    ): BlogResponse {
+    ): Response {
         return try {
             val blogId = ctx.parameters["blogId"]?.toInt()
+            val header = ctx.request.headers["Authorization"]
+            header?.replace("Bearer ", "")?.let { token ->
+                validateAccessTokenType(getTokenType(token))
+            }
+            val updateTime = blogRequest.creationTime.ifEmpty { null }
             validateUpdateBlogFields(blogId!!, blogRequest.title, blogRequest.description)
-            blogDao.update(blogId, blogRequest.title, blogRequest.description, getConvertedCurrentTime()).let {
+            blogDao.update(blogId, blogRequest.title, blogRequest.description, updateTime).let {
                 BlogResponse.success(
                     "Updated",
                     BlogDomainModel.fromData(it)
                 )
             }
         } catch (e: BadRequestException) {
-            BlogResponse.failed(e.message)
+            GeneralResponse.failed(e.message)
         } catch (e: IllegalArgumentException) {
-            BlogResponse.failed(e.message!!)
+            GeneralResponse.failed(e.message!!)
         } catch (e: EntityNotFoundException) {
-            BlogResponse.notFound(e.message!!)
+            GeneralResponse.notFound("Blog not exist with ID '${ctx.parameters["blogId"]?.toInt()}'")
         }
     }
 
-    override suspend fun deleteBlog(ctx: ApplicationCall): GeneralResponse {
+    override suspend fun deleteBlog(ctx: ApplicationCall): Response {
         return try {
             val blogId = ctx.parameters["blogId"]?.toInt()
-
+            val header = ctx.request.headers["Authorization"]
+            header?.replace("Bearer ", "")?.let { token ->
+                validateAccessTokenType(getTokenType(token))
+            }
             if (!blogDao.exists(blogId!!)) {
                 throw BlogNotFoundException("Blog not exist with ID '$blogId'")
             }
-
             if (blogDao.deleteById(blogId)) {
                 GeneralResponse.success(
                     "Deleted"
@@ -114,11 +154,14 @@ class DefaultBlogController : BaseController(), BlogController, KoinComponent {
         }
     }
 
-    override suspend fun checkBlogAuthor(ctx: ApplicationCall): GeneralResponse {
+    override suspend fun checkBlogAuthor(ctx: ApplicationCall): Response {
         return try {
             val blogId = ctx.parameters["blogId"]?.toInt()
             val userId = ctx.principal<UserPrincipal>()?.user?.id
-
+            val header = ctx.request.headers["Authorization"]
+            header?.replace("Bearer ", "")?.let { token ->
+                validateAccessTokenType(getTokenType(token))
+            }
             if (blogDao.isBlogAuthor(blogId!!, userId!!)) {
                 GeneralResponse.success(
                     "You have permission to edit that"
@@ -139,9 +182,15 @@ class DefaultBlogController : BaseController(), BlogController, KoinComponent {
 }
 
 interface BlogController {
-    suspend fun getBlogsByQuery(parameters: Parameters, ctx: ApplicationCall): BlogsResponse
-    suspend fun storeBlog(blogRequest: BlogRequest, ctx: ApplicationCall): BlogResponse
-    suspend fun updateBlog(blogRequest: BlogRequest, ctx: ApplicationCall): BlogResponse
-    suspend fun deleteBlog(ctx: ApplicationCall): GeneralResponse
-    suspend fun checkBlogAuthor(ctx: ApplicationCall): GeneralResponse
+    suspend fun getBlogsByQuery(parameters: Parameters, ctx: ApplicationCall): Response
+    suspend fun sendNotification(httpClient: HttpClient, apiKey: String, notification: Notification): Response
+    suspend fun storeBlog(blogRequest: BlogRequest, ctx: ApplicationCall): Response
+    suspend fun updateBlog(blogRequest: BlogRequest, ctx: ApplicationCall): Response
+    suspend fun deleteBlog(ctx: ApplicationCall): Response
+    suspend fun checkBlogAuthor(ctx: ApplicationCall): Response
+
+    companion object {
+        const val ONESIGNAL_APP_ID = "6679eba8-ba98-43da-ba87-9a9c7457bd33"
+        const val NOTIFICATIONS = "https://onesignal.com/api/v1/notifications"
+    }
 }

@@ -20,9 +20,10 @@ fun Route.authApi() {
 
             route("/idp") {
 
+                // Single endpoint for both signing and registration
                 post("/google") {
                     val idpAuthenticationRequest = call.receive<IdpAuthenticationRequest>()
-                    val idpAuthenticationResponse = authController.idpAuthentication(idpAuthenticationRequest)
+                    val idpAuthenticationResponse = authController.idpAuthentication(idpAuthenticationRequest, this.context)
                     val response = generateHttpResponse(idpAuthenticationResponse)
                     call.respond(response.code, response.body)
                 }
@@ -43,20 +44,23 @@ fun Route.authApi() {
             call.respond(response.code, response.body)
         }
 
-        post("/sign-out") {
-            val revokeTokenRequest = call.receive<RevokeTokenRequest>()
-            val revokeTokenResponse =
-                authController.signOut(revokeTokenRequest)
-            val response = generateHttpResponse(revokeTokenResponse)
-            call.respond(response.code, response.body)
-        }
+        route("/token") {
 
-        post("/token") {
-            val refreshTokenRequest = call.receive<RefreshTokenRequest>()
-            val refreshTokenResponse =
-                authController.refreshToken(refreshTokenRequest)
-            val response = generateHttpResponse(refreshTokenResponse)
-            call.respond(response.code, response.body)
+            post("/refresh") {
+                val refreshTokenRequest = call.receive<RefreshTokenRequest>()
+                val refreshTokenResponse =
+                    authController.refreshToken(refreshTokenRequest)
+                val response = generateHttpResponse(refreshTokenResponse)
+                call.respond(response.code, response.body)
+            }
+
+            post("/revoke") {
+                val revokeTokenRequest = call.receive<RevokeTokenRequest>()
+                val revokeTokenResponse =
+                    authController.revokeToken(revokeTokenRequest)
+                val response = generateHttpResponse(revokeTokenResponse)
+                call.respond(response.code, response.body)
+            }
         }
 
         route("/account") {
@@ -82,6 +86,7 @@ fun Route.authApi() {
             }
         }
 
+        // Not used with android client
         post("/reset-password") {
             val resetPasswordRequest = call.receive<ResetPasswordRequest>()
             val passwordResetResponse =
@@ -90,6 +95,7 @@ fun Route.authApi() {
             call.respond(response.code, response.body)
         }
 
+        // Not used with android client
         post("confirm-reset-password") {
             val tokenParameters = call.request.queryParameters
             val resetPasswordRequest = call.receive<UpdatePasswordRequest>()

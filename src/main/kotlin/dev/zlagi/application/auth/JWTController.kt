@@ -11,8 +11,8 @@ object JWTController : TokenProvider {
 
     private const val secret = "bkFwb2xpdGE2OTk5"
     private const val issuer = "bkFwb2xpdGE2OTk5"
-    private const val validityInMs: Long = 600000L // 10 Minutes
-    private const val refreshValidityInMs: Long = 3600000L // 1 Hour
+    private const val validityInMs: Long = 1200000L // 20 Minutes
+    private const val refreshValidityInMs: Long = 3600000L * 24L * 30L // 30 days
     private val algorithm = Algorithm.HMAC512(secret)
 
     val verifier: JWTVerifier = JWT

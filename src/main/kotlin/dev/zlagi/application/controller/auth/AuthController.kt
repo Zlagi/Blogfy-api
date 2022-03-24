@@ -4,6 +4,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException
 import com.auth0.jwt.exceptions.SignatureVerificationException
 import com.auth0.jwt.exceptions.TokenExpiredException
 import dev.zlagi.application.auth.TokenProvider
+import dev.zlagi.application.auth.firebase.FirebaseUserPrincipal
 import dev.zlagi.application.auth.principal.UserPrincipal
 import dev.zlagi.application.controller.BaseController
 import dev.zlagi.application.exception.BadRequestException
@@ -28,17 +29,20 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
     private val refreshTokensDao by inject<TokenDao>()
     private val tokenProvider by inject<TokenProvider>()
 
-    override suspend fun idpAuthentication(idpAuthenticationRequest: IdpAuthenticationRequest): AuthResponse {
+    override suspend fun idpAuthentication(
+        idpAuthenticationRequest: IdpAuthenticationRequest,
+        ctx: ApplicationCall
+    ): AuthResponse {
         return try {
-            validateIdpAuthenticationFieldsOrThrowException(idpAuthenticationRequest.email)
-            userDao.findByEmail(idpAuthenticationRequest.email)?.let { user ->
+            val userEmail = ctx.principal<FirebaseUserPrincipal>()?.email
+            userDao.findByEmail(userEmail!!)?.let { user ->
                 val tokens = tokenProvider.createTokens(user)
                 AuthResponse.success(
                     "Sign in successfully",
                     tokens.access_token,
                     tokens.refresh_token
                 )
-            } ?: userDao.storeUser(idpAuthenticationRequest.email, idpAuthenticationRequest.username, null).let {
+            } ?: userDao.storeUser(userEmail, idpAuthenticationRequest.username, null).let {
                 val tokens = tokenProvider.createTokens(it)
                 AuthResponse.success(
                     "Sign up successfully",
@@ -87,35 +91,6 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
         }
     }
 
-    override suspend fun signOut(revokeTokenRequest: RevokeTokenRequest): GeneralResponse {
-        return try {
-            val token = revokeTokenRequest.token
-            validateSignOutFieldsOrThrowException(token)
-            tokenProvider.verifyToken(token)?.let { userId ->
-                val tokenType = getTokenType(token)
-                validateRefreshTokenType(tokenType)
-                verifyTokenRevocation(token, userId)
-                deleteExpiredTokens(userId, getConvertedCurrentTime())
-                userDao.findByID(userId)?.let {
-                    storeToken(token)
-                    GeneralResponse.success(
-                        "Sign out successfully"
-                    )
-                } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
-            } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
-        } catch (e: TokenExpiredException) {
-            GeneralResponse.failed("Authentication failed: Refresh token expired")
-        } catch (e: SignatureVerificationException) {
-            GeneralResponse.failed("Authentication failed: Failed to parse Refresh token")
-        } catch (e: JWTDecodeException) {
-            GeneralResponse.failed("Authentication failed: Failed to parse Refresh token")
-        } catch (e: BadRequestException) {
-            GeneralResponse.failed(e.message)
-        } catch (e: UnauthorizedActivityException) {
-            GeneralResponse.unauthorized(e.message)
-        }
-    }
-
     override suspend fun refreshToken(refreshTokenRequest: RefreshTokenRequest): AuthResponse {
         return try {
             val token = refreshTokenRequest.token
@@ -146,6 +121,35 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
             AuthResponse.failed(e.message)
         } catch (e: UnauthorizedActivityException) {
             AuthResponse.unauthorized(e.message)
+        }
+    }
+
+    override suspend fun revokeToken(revokeTokenRequest: RevokeTokenRequest): GeneralResponse {
+        return try {
+            val token = revokeTokenRequest.token
+            validateSignOutFieldsOrThrowException(token)
+            tokenProvider.verifyToken(token)?.let { userId ->
+                val tokenType = getTokenType(token)
+                validateRefreshTokenType(tokenType)
+                verifyTokenRevocation(token, userId)
+                deleteExpiredTokens(userId, getConvertedCurrentTime())
+                userDao.findByID(userId)?.let {
+                    storeToken(token)
+                    GeneralResponse.success(
+                        "Sign out successfully"
+                    )
+                } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
+            } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
+        } catch (e: TokenExpiredException) {
+            GeneralResponse.success("Revocation success: Refresh token already expired")
+        } catch (e: SignatureVerificationException) {
+            GeneralResponse.success("Revocation failed: Failed to parse Refresh token")
+        } catch (e: JWTDecodeException) {
+            GeneralResponse.success("Revocation failed: Failed to parse Refresh token")
+        } catch (e: BadRequestException) {
+            GeneralResponse.failed(e.message)
+        } catch (e: UnauthorizedActivityException) {
+            GeneralResponse.unauthorized(e.message)
         }
     }
 
@@ -252,11 +256,15 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
 }
 
 interface AuthController {
-    suspend fun idpAuthentication(idpAuthenticationRequest: IdpAuthenticationRequest): AuthResponse
+    suspend fun idpAuthentication(
+        idpAuthenticationRequest: IdpAuthenticationRequest,
+        ctx: ApplicationCall
+    ): AuthResponse
+
     suspend fun signIn(signInRequest: SignInRequest): AuthResponse
     suspend fun signUp(signUpRequest: SignUpRequest): AuthResponse
-    suspend fun signOut(revokeTokenRequest: RevokeTokenRequest): GeneralResponse
     suspend fun refreshToken(refreshTokenRequest: RefreshTokenRequest): AuthResponse
+    suspend fun revokeToken(revokeTokenRequest: RevokeTokenRequest): GeneralResponse
     suspend fun getAccountById(ctx: ApplicationCall): AccountResponse
     suspend fun updateAccountPassword(
         updatePasswordRequest: UpdatePasswordRequest,

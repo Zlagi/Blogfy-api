@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BlogDomainModel(
-    val id: Int,
+    val pk: Int,
     val username: String,
     val title: String,
     val description: String,
@@ -51,7 +51,7 @@ data class BlogResponse(
         fun success(message: String, blog: BlogDomainModel) = BlogResponse(
             State.SUCCESS,
             message,
-            blog.id,
+            blog.pk,
             blog.title,
             blog.description,
             blog.created,

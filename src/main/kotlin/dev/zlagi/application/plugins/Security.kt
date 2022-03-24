@@ -27,6 +27,7 @@ fun Application.configureSecurity(
             verifier(jwtVerifier)
 
             // https://stackoverflow.com/questions/62377411/how-do-i-get-access-to-errors-in-custom-ktor-jwt-challenge
+
             challenge { _, _ ->
                 // get custom error message if error exists
                 val header = call.request.headers["Authorization"]
