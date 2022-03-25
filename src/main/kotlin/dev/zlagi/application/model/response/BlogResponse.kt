@@ -43,11 +43,6 @@ data class BlogResponse(
             message
         )
 
-        fun notFound(message: String) = BlogResponse(
-            State.NOT_FOUND,
-            message
-        )
-
         fun success(message: String, blog: BlogDomainModel) = BlogResponse(
             State.SUCCESS,
             message,

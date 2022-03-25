@@ -13,6 +13,7 @@ import dev.zlagi.application.model.request.*
 import dev.zlagi.application.model.response.AccountResponse
 import dev.zlagi.application.model.response.AuthResponse
 import dev.zlagi.application.model.response.GeneralResponse
+import dev.zlagi.application.model.response.Response
 import dev.zlagi.data.dao.TokenDao
 import dev.zlagi.data.dao.UserDao
 import io.ktor.application.*
@@ -32,7 +33,7 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
     override suspend fun idpAuthentication(
         idpAuthenticationRequest: IdpAuthenticationRequest,
         ctx: ApplicationCall
-    ): AuthResponse {
+    ): Response {
         return try {
             val userEmail = ctx.principal<FirebaseUserPrincipal>()?.email
             userDao.findByEmail(userEmail!!)?.let { user ->
@@ -51,11 +52,11 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                 )
             }
         } catch (e: BadRequestException) {
-            AuthResponse.failed(e.message)
+            GeneralResponse.failed(e.message)
         }
     }
 
-    override suspend fun signIn(signInRequest: SignInRequest): AuthResponse {
+    override suspend fun signIn(signInRequest: SignInRequest): Response {
         return try {
             validateSignInFieldsOrThrowException(signInRequest)
             userDao.findByEmail(signInRequest.email)?.let {
@@ -68,13 +69,13 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                 )
             } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
         } catch (e: BadRequestException) {
-            AuthResponse.failed(e.message)
+            GeneralResponse.failed(e.message)
         } catch (e: UnauthorizedActivityException) {
-            AuthResponse.unauthorized(e.message)
+            GeneralResponse.unauthorized(e.message)
         }
     }
 
-    override suspend fun signUp(signUpRequest: SignUpRequest): AuthResponse {
+    override suspend fun signUp(signUpRequest: SignUpRequest): Response {
         return try {
             validateSignUpFieldsOrThrowException(signUpRequest)
             verifyEmail(signUpRequest.email)
@@ -87,11 +88,11 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                 tokens.refresh_token
             )
         } catch (e: BadRequestException) {
-            AuthResponse.failed(e.message)
+            GeneralResponse.failed(e.message)
         }
     }
 
-    override suspend fun refreshToken(refreshTokenRequest: RefreshTokenRequest): AuthResponse {
+    override suspend fun refreshToken(refreshTokenRequest: RefreshTokenRequest): Response {
         return try {
             val token = refreshTokenRequest.token
             val expirationTime = getConvertedTokenExpirationTime(token)
@@ -112,19 +113,19 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
                 } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
             } ?: throw UnauthorizedActivityException("Authentication failed: Invalid credentials")
         } catch (e: TokenExpiredException) {
-            AuthResponse.failed("Authentication failed: Refresh token expired")
+            GeneralResponse.failed("Authentication failed: Refresh token expired")
         } catch (e: SignatureVerificationException) {
-            AuthResponse.failed("Authentication failed: Failed to parse Refresh token")
+            GeneralResponse.failed("Authentication failed: Failed to parse Refresh token")
         } catch (e: JWTDecodeException) {
-            AuthResponse.failed("Authentication failed: Failed to parse Refresh token")
+            GeneralResponse.failed("Authentication failed: Failed to parse Refresh token")
         } catch (e: BadRequestException) {
-            AuthResponse.failed(e.message)
+            GeneralResponse.failed(e.message)
         } catch (e: UnauthorizedActivityException) {
-            AuthResponse.unauthorized(e.message)
+            GeneralResponse.unauthorized(e.message)
         }
     }
 
-    override suspend fun revokeToken(revokeTokenRequest: RevokeTokenRequest): GeneralResponse {
+    override suspend fun revokeToken(revokeTokenRequest: RevokeTokenRequest): Response {
         return try {
             val token = revokeTokenRequest.token
             validateSignOutFieldsOrThrowException(token)
@@ -153,21 +154,21 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
         }
     }
 
-    override suspend fun getAccountById(ctx: ApplicationCall): AccountResponse {
+    override suspend fun getAccountById(ctx: ApplicationCall): Response {
         return try {
             val userId = ctx.principal<UserPrincipal>()?.user?.id
             userDao.findByID(userId!!)?.let {
                 AccountResponse.success("User found", it.id, it.username, it.email)
             } ?: throw UnauthorizedActivityException("User do not exist")
         } catch (e: UnauthorizedActivityException) {
-            AccountResponse.notFound(e.message)
+            GeneralResponse.notFound(e.message)
         }
     }
 
     override suspend fun updateAccountPassword(
         updatePasswordRequest: UpdatePasswordRequest,
         ctx: ApplicationCall
-    ): GeneralResponse {
+    ): Response {
         return try {
             val userId = ctx.principal<UserPrincipal>()?.user?.id
             val encryptedPassword = getEncryptedPassword(updatePasswordRequest.currentPassword)
@@ -182,11 +183,11 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
         } catch (e: BadRequestException) {
             GeneralResponse.failed(e.message)
         } catch (e: UnauthorizedActivityException) {
-            GeneralResponse.success(e.message)
+            GeneralResponse.failed(e.message)
         }
     }
 
-    override suspend fun resetPassword(userEmail: String): GeneralResponse {
+    override suspend fun resetPassword(userEmail: String): Response {
         return try {
             validateResetPasswordFieldsOrThrowException(userEmail)
             userDao.findByEmail(userEmail)?.let {
@@ -223,7 +224,7 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
     override suspend fun confirmPasswordReset(
         tokenParameters: Parameters,
         updatePasswordRequest: UpdatePasswordRequest
-    ): GeneralResponse {
+    ): Response {
         return try {
             val token = tokenParameters["token"]
             validateTokenParametersOrThrowException(token)
@@ -259,21 +260,21 @@ interface AuthController {
     suspend fun idpAuthentication(
         idpAuthenticationRequest: IdpAuthenticationRequest,
         ctx: ApplicationCall
-    ): AuthResponse
+    ): Response
 
-    suspend fun signIn(signInRequest: SignInRequest): AuthResponse
-    suspend fun signUp(signUpRequest: SignUpRequest): AuthResponse
-    suspend fun refreshToken(refreshTokenRequest: RefreshTokenRequest): AuthResponse
-    suspend fun revokeToken(revokeTokenRequest: RevokeTokenRequest): GeneralResponse
-    suspend fun getAccountById(ctx: ApplicationCall): AccountResponse
+    suspend fun signIn(signInRequest: SignInRequest): Response
+    suspend fun signUp(signUpRequest: SignUpRequest): Response
+    suspend fun refreshToken(refreshTokenRequest: RefreshTokenRequest): Response
+    suspend fun revokeToken(revokeTokenRequest: RevokeTokenRequest): Response
+    suspend fun getAccountById(ctx: ApplicationCall): Response
     suspend fun updateAccountPassword(
         updatePasswordRequest: UpdatePasswordRequest,
         ctx: ApplicationCall
-    ): GeneralResponse
+    ): Response
 
-    suspend fun resetPassword(userEmail: String): GeneralResponse
+    suspend fun resetPassword(userEmail: String): Response
     suspend fun confirmPasswordReset(
         tokenParameters: Parameters,
         updatePasswordRequest: UpdatePasswordRequest
-    ): GeneralResponse
+    ): Response
 }

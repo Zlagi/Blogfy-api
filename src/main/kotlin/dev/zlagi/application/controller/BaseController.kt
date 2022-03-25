@@ -175,7 +175,7 @@ abstract class BaseController : KoinComponent {
 
     internal suspend fun verifyEmail(email: String) {
         if (!userDao.isEmailAvailable(email)) {
-            throw BadRequestException("Authentication failed: Email is not available")
+            throw BadRequestException("Authentication failed: Email is already taken")
         }
     }
 

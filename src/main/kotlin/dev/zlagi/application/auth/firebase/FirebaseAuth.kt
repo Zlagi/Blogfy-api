@@ -4,7 +4,7 @@ import com.google.firebase.ErrorCode
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
-import dev.zlagi.application.model.response.AuthResponse
+import dev.zlagi.application.model.response.GeneralResponse
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
@@ -59,7 +59,7 @@ fun Authentication.Configuration.firebase(
             }
 
             firebaseAuthLogger.trace(message)
-            call.respond(HttpStatusCode.Unauthorized, AuthResponse.failed(message))
+            call.respond(HttpStatusCode.Unauthorized, GeneralResponse.failed(message))
             context.challenge.complete()
             finish()
         }
