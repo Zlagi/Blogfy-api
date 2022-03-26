@@ -37,8 +37,8 @@ fun Route.blogApi(httpClient: HttpClient, apiKey: String) {
                 val username = call.principal<UserPrincipal>()?.user?.username
                 val notificationResponse = blogController.sendNotification(httpClient, apiKey, Notification(
                     includedSegments = listOf("All"),
-                    headings = NotificationMessage(en = "New post from $username \uD83D\uDD25 \n"),
-                    contents = NotificationMessage(en = blog.title),
+                    headings = NotificationMessage(en = "Blogfy"),
+                    contents = NotificationMessage(en = "$username has published a new blog\uD83D\uDD25"),
                     appId = ONESIGNAL_APP_ID
                 ))
                 val response = generateHttpResponse(notificationResponse)
