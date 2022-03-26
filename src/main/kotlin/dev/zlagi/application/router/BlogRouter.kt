@@ -6,12 +6,10 @@ import dev.zlagi.application.controller.blog.BlogController.Companion.ONESIGNAL_
 import dev.zlagi.application.model.request.BlogRequest
 import dev.zlagi.application.model.request.Notification
 import dev.zlagi.application.model.request.NotificationMessage
-import dev.zlagi.application.model.request.NotificationRequest
 import dev.zlagi.application.model.response.generateHttpResponse
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.client.*
-import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
@@ -33,7 +31,6 @@ fun Route.blogApi(httpClient: HttpClient, apiKey: String) {
             }
 
             post("/notification") {
-                val blog = call.receive<NotificationRequest>()
                 val username = call.principal<UserPrincipal>()?.user?.username
                 val notificationResponse = blogController.sendNotification(httpClient, apiKey, Notification(
                     includedSegments = listOf("All"),
