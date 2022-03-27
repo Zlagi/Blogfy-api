@@ -6,7 +6,7 @@ Blogfy backend _REST API_ is built with Ktor framework with PostgreSQL as databa
 
 Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You can try it 😃.
 
-[![Taskify](https://img.shields.io/badge/Taskify✅-APK-red.svg?style=for-the-badge&logo=android)](https://github.com/Zlagi/Blogfy/releases/tag/4)
+[![Blogfy](https://img.shields.io/badge/Blogfy✅-APK-red.svg?style=for-the-badge&logo=android)](https://github.com/Zlagi/Blogfy/releases/tag/4)
 
 ## Features 👓
 
