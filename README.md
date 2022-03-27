@@ -7,6 +7,8 @@ Blogfy backend _REST API_ is built with Ktor framework with PostgreSQL as databa
 Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You can try it 😃.
 
 [![Blogfy](https://img.shields.io/badge/Blogfy✅-APK-red.svg?style=for-the-badge&logo=android)](https://github.com/Zlagi/Blogfy/releases/tag/4)
+[![Kotlin](https://img.shields.io/badge/kotlin-1.6.10-orange.svg?logo=kotlin)](http://kotlinlang.org)
+[![Ktor](https://img.shields.io/badge/ktor-1.6.7-orange.svg?logo=kotlin)](https://ktor.io)
 
 ## Features 👓
 
@@ -17,26 +19,23 @@ Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You c
 
 # Package Structure
     
-    com.vaibhav.taskify    # Root Package
+    dev.zlagi.application    # Root Package
     .
-    ├── data                # For data handling.
-    |   ├── local           # Room DB and its related classes
-    |   ├── remote          # Firebase, HarperDB and their relative classes
-    │   ├── model           # Model data classes, both remote and local entities
-    │   └── repo            # Single source of data.
+    ├── application                
+    |   ├── auth             
+    |   ├── controller        
+    │   ├── exception        
+    │   ├── model            
+    │   ├── plugins          
+    │   ├── router           
+    │   ├── utils            
+    │   └── Application.Kt   
+    │
     |
-    ├── di                  # Dependency Injection             
-    │   └── module          # DI Modules
-    |
-    ├── ui                  # UI/View layer
-    |   ├── adapters        # All Adapters, viewholder and diffUtils for recyclerViews      
-    │   ├── auth            # Authorization Activity and its fragments
-    │   ├── mainScreen      # Home Activity and its fragments
-    |   ├── addTaskScreen   # Add Task Activity and its fragments
-    |   ├── onBoarding      # OnboardingScreen
-    │   └── splashScreen    # SplashScreen
-    |
-    ├── service             # Timer Service and its related classes
-    |
-    └── utils               # Utility Classes / Kotlin extensions
+    └── data
+        ├── dao       
+        ├── database        
+        ├── di            
+        ├── entity          
+        └── model          
 
