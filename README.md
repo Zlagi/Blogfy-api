@@ -15,14 +15,28 @@ Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You c
 - Automatic and easy deployment to Heroku
 - Test cases
 
-.
-├── Application.kt
-├── config
-│   └── AppConfig.kt
-├── database
-│   ├── DatabaseFactory.kt
-│   └── DatabaseFactoryImpl.kt
-├── di
-    └── AppModule.kt
-
+# Package Structure
+    
+    com.vaibhav.taskify    # Root Package
+    .
+    ├── data                # For data handling.
+    |   ├── local           # Room DB and its related classes
+    |   ├── remote          # Firebase, HarperDB and their relative classes
+    │   ├── model           # Model data classes, both remote and local entities
+    │   └── repo            # Single source of data.
+    |
+    ├── di                  # Dependency Injection             
+    │   └── module          # DI Modules
+    |
+    ├── ui                  # UI/View layer
+    |   ├── adapters        # All Adapters, viewholder and diffUtils for recyclerViews      
+    │   ├── auth            # Authorization Activity and its fragments
+    │   ├── mainScreen      # Home Activity and its fragments
+    |   ├── addTaskScreen   # Add Task Activity and its fragments
+    |   ├── onBoarding      # OnboardingScreen
+    │   └── splashScreen    # SplashScreen
+    |
+    ├── service             # Timer Service and its related classes
+    |
+    └── utils               # Utility Classes / Kotlin extensions
 
