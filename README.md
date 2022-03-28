@@ -20,6 +20,7 @@ Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You c
 - Check blog author.
 - Fetch blogs with pagination.
 - Fetch account properties and update account password.
+- Send push notifications to android clients.
 - Validate requests body and authorization header (custom Ktor JWT challenge).
 - Automatic and easy deployment to Heroku.
 
@@ -50,6 +51,7 @@ Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You c
 # Built With 🛠
 - [Ktor](https://ktor.io/) - Ktor is an asynchronous framework for creating microservices, web applications, and more. It’s fun, free, and open source.
 - [Firebase_Admin](https://firebase.google.com/docs/admin/setup) - The Admin SDK is a set of server libraries that lets you interact with Firebase.
+- [One_Signal](https://onesignal.com) - An Api for Push Notifications, Email, SMS & In-App..
 - [Exposed](https://github.com/JetBrains/Exposed) - An ORM/SQL framework for Kotlin.
 - [PostgreSQL JDBC Driver](https://jdbc.postgresql.org/) - JDBC Database driver for PostgreSQL.
 - [HikariCP](https://github.com/brettwooldridge/HikariCP) - High performance JDBC connection pooling.
@@ -212,6 +214,14 @@ Authorization: Bearer KTOR_AUTH_TOKEN
 
 ```http
 DELETE http://localhost:8080/blog/NOTE_ID_HERE/is_author
+Content-Type: application/json
+Authorization: Bearer KTOR_AUTH_TOKEN
+```
+
+### Send push notifications
+
+```http
+POST http://localhost:8080/blog/notification
 Content-Type: application/json
 Authorization: Bearer KTOR_AUTH_TOKEN
 ```
