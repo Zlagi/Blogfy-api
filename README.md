@@ -1,14 +1,14 @@
 # Blogfy (API)
 
 [![Build (API)](https://github.com/Zlagi/blogfy-api/actions/workflows/run-build.yml/badge.svg)](https://github.com/Zlagi/blogfy-api/actions/workflows/run-build.yml)
+[![Kotlin](https://img.shields.io/badge/kotlin-1.6.10-orange.svg?logo=kotlin)](http://kotlinlang.org)
+[![Ktor](https://img.shields.io/badge/ktor-1.6.7-orange.svg?logo=kotlin)](https://ktor.io)
 
 Blogfy backend _REST API_ is built with Ktor framework with PostgreSQL as database and deployed on the Heroku.
 
 Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You can try it 😃.
 
 [![Blogfy](https://img.shields.io/badge/Blogfy✅-APK-red.svg?style=for-the-badge&logo=android)](https://github.com/Zlagi/Blogfy/releases/tag/4)
-[![Kotlin](https://img.shields.io/badge/kotlin-1.6.10-orange.svg?logo=kotlin)](http://kotlinlang.org)
-[![Ktor](https://img.shields.io/badge/ktor-1.6.7-orange.svg?logo=kotlin)](https://ktor.io)
 
 # Features 👓
 
@@ -86,7 +86,8 @@ Content-Type: application/json
 
 ```
 
-### Google identity provider (single endpoint for both signin and signup)
+### Google 
+#### ⚠️single endpoint for both signin and signup.
 
 ```http
 POST http://localhost:8080/auth/idp/google
@@ -99,7 +100,7 @@ Authorization: Bearer YOUR_FIREBASE_AUTH_TOKEN
 
 ```
 
-### Refresh Ktor JWT
+### Refresh ktor token
 
 ```http
 POST http://localhost:8080/auth/token/refresh
@@ -111,7 +112,7 @@ Content-Type: application/json
 
 ```
 
-### Revoke Ktor JWT
+### Revoke ktor token
 
 ```http
 POST http://localhost:8080/auth/token/revoke
@@ -153,13 +154,13 @@ Content-Type: application/json
 
 ### Get all blogs by query
 
-#### without query parameters
+#### ⚠️without query parameters
 ```http
 GET http://localhost:8080/blog/list
 Content-Type: application/json
 Authorization: Bearer KTOR_AUTH_TOKEN
 ```
-##### with query parameters
+##### ⚠️with query parameters
 ```http
 GET http://localhost:8080/blog/list?search_query=test&page=2&limit=5
 Content-Type: application/json
@@ -167,7 +168,7 @@ Authorization: Bearer KTOR_AUTH_TOKEN
 ```
 
 ### Create New Blog
-#### creation time is sent from android client side
+#### ⚠️creation time is sent from android client side.
 
 ```http
 POST http://localhost:8080/blog
@@ -182,7 +183,7 @@ Authorization: Bearer KTOR_AUTH_TOKEN
 ```
 
 ### Update Blog
-#### creation time is sent from android client side
+#### ⚠️creation time is sent from android client side.
 
 ```http
 PUT http://localhost:8080/blog/BLOG_ID_HERE
