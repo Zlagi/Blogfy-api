@@ -10,6 +10,7 @@ Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You c
 
 [![Blogfy](https://img.shields.io/badge/Blogfy✅-APK-red.svg?style=for-the-badge&logo=android)](https://github.com/Zlagi/Blogfy/releases/tag/4)
 
+
 # Features 👓
 
 - Authentication for email based auth.
@@ -21,6 +22,7 @@ Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You c
 - Fetch account properties and update account password.
 - Validate requests body and authorization header (custom Ktor JWT challenge).
 - Automatic and easy deployment to Heroku.
+
 
 # Package Structure
     
@@ -43,6 +45,7 @@ Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You c
         ├── di            
         ├── entity          
         └── model
+        
         
 # Built With 🛠
 - [Ktor](https://ktor.io/) - Ktor is an asynchronous framework for creating microservices, web applications, and more. It’s fun, free, and open source.
@@ -87,7 +90,7 @@ Content-Type: application/json
 ```
 
 ### Google 
-#### ⚠️single endpoint for both signin and signup.
+#### ⚠️ single endpoint for both signin and signup.
 
 ```http
 POST http://localhost:8080/auth/idp/google
@@ -154,13 +157,13 @@ Content-Type: application/json
 
 ### Get all blogs by query
 
-#### ⚠️without query parameters
+#### ⚠️ without query parameters
 ```http
 GET http://localhost:8080/blog/list
 Content-Type: application/json
 Authorization: Bearer KTOR_AUTH_TOKEN
 ```
-##### ⚠️with query parameters
+#### ⚠️ with query parameters
 ```http
 GET http://localhost:8080/blog/list?search_query=test&page=2&limit=5
 Content-Type: application/json
@@ -168,7 +171,7 @@ Authorization: Bearer KTOR_AUTH_TOKEN
 ```
 
 ### Create New Blog
-#### ⚠️creation time is sent from android client side.
+#### ⚠️ creation time is sent from android client side.
 
 ```http
 POST http://localhost:8080/blog
