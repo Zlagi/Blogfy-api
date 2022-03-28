@@ -20,7 +20,7 @@ Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You c
 - Fetch blogs with pagination.
 - Fetch account properties and update account password.
 - Validate requests body and authorization header (custom Ktor JWT challenge).
-- Automatic and easy deployment to Heroku
+- Automatic and easy deployment to Heroku.
 
 # Package Structure
     
@@ -58,7 +58,7 @@ Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You c
 
 ## Authentication
 
-### Sign Up
+### Sign up
 
 ```http
 POST http://localhost:8080/auth/signup
@@ -73,7 +73,7 @@ Content-Type: application/json
 
 ```
 
-### Sign In
+### Sign in
 
 ```http
 POST http://localhost:8080/auth/signin
@@ -86,7 +86,7 @@ Content-Type: application/json
 
 ```
 
-### Google Identity Provider (single endpoint for both signin and signup)
+### Google identity provider (single endpoint for both signin and signup)
 
 ```http
 POST http://localhost:8080/auth/idp/google
@@ -123,53 +123,115 @@ Content-Type: application/json
 
 ```
 
+### Send reset password link
+
+```http
+POST http://localhost:8080/auth/reset-password
+Content-Type: application/json
+
+{
+    "email" : "test@gmail.com"
+}
+
+```
+
+### Confirm reset password
+
+```http
+POST http://localhost:8080/auth/confirm-reset-password?token=KTOR_AUTH_TOKEN
+Content-Type: application/json
+
+{
+    "currentPassword": "oldpassword",
+    "newPassword": "newpassword",
+    "confirmNewPassword": "newpassword"
+}
+
+```
+
 ## Blog operations
 
 ### Get all blogs by query
 
-# Without query parameters
+#### without query parameters
 ```http
 GET http://localhost:8080/blog/list
 Content-Type: application/json
 Authorization: Bearer KTOR_AUTH_TOKEN
 ```
-# With query parameters
+##### with query parameters
 ```http
 GET http://localhost:8080/blog/list?search_query=test&page=2&limit=5
 Content-Type: application/json
 Authorization: Bearer KTOR_AUTH_TOKEN
 ```
 
-### Create New Note
+### Create New Blog
+#### creation time is sent from android client side
 
 ```http
-POST http://localhost:8080/note/new
+POST http://localhost:8080/blog
 Content-Type: application/json
-Authorization: Bearer YOUR_AUTH_TOKEN
+Authorization: Bearer KTOR_AUTH_TOKEN
 
 {
   "title": "Hey there! This is title",
-  "note": "Write note here..."
+  "description": "Write some description here...",
+  "creationTime": "Date: 2022-03-07 Time: 22:10:56"
 }
 ```
 
-### Update Note
+### Update Blog
+#### creation time is sent from android client side
 
 ```http
-PUT http://localhost:8080/note/NOTE_ID_HERE
+PUT http://localhost:8080/blog/BLOG_ID_HERE
 Content-Type: application/json
-Authorization: Bearer YOUR_AUTH_TOKEN
+Authorization: Bearer KTOR_AUTH_TOKEN
 
 {
   "title": "Updated title!",
-  "note": "Updated body here..."
+  "note": "Updated body here...",
+  "creationTime": "Date: 2022-03-07 Time: 22:20:38"
 }
 ```
 
-### Delete Note
+### Delete Blog
 
 ```http
-DELETE http://localhost:8080/note/NOTE_ID_HERE
+DELETE http://localhost:8080/blog/NOTE_ID_HERE
 Content-Type: application/json
-Authorization: Bearer YOUR_AUTH_TOKEN
+Authorization: Bearer KTOR_AUTH_TOKEN
+```
+
+### Check Blog Author
+
+```http
+DELETE http://localhost:8080/blog/NOTE_ID_HERE/is_author
+Content-Type: application/json
+Authorization: Bearer KTOR_AUTH_TOKEN
+```
+
+## Account operations
+
+### Get Account
+
+```http
+Get http://localhost:8080/account
+Content-Type: application/json
+Authorization: Bearer KTOR_AUTH_TOKEN
+```
+
+### Update Password
+
+```http
+PUT http://localhost:8080/account/password
+Content-Type: application/json
+Authorization: Bearer KTOR_AUTH_TOKEN
+
+{
+  "currentPassword": "oldpassword",
+  "newPassword": "newpassword",
+  "confirmNewPassword": "newpassword"
+}
 ```
