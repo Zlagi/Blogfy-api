@@ -50,14 +50,14 @@ Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You c
         
 # Built With 🛠
 - [Ktor](https://ktor.io/) - Ktor is an asynchronous framework for creating microservices, web applications, and more. It’s fun, free, and open source.
-- [Firebase_Admin](https://firebase.google.com/docs/admin/setup) - The Admin SDK is a set of server libraries that lets you interact with Firebase.
-- [One_Signal](https://onesignal.com) - An Api for Push Notifications, Email, SMS & In-App..
+- [Firebase Admin](https://firebase.google.com/docs/admin/setup) - The Admin SDK is a set of server libraries that lets you interact with Firebase.
+- [One Signal](https://onesignal.com) - An Api for Push Notifications, Email, SMS & In-App..
 - [Exposed](https://github.com/JetBrains/Exposed) - An ORM/SQL framework for Kotlin.
 - [PostgreSQL JDBC Driver](https://jdbc.postgresql.org/) - JDBC Database driver for PostgreSQL.
 - [HikariCP](https://github.com/brettwooldridge/HikariCP) - High performance JDBC connection pooling.
 - [Koin](https://insert-koin.io/docs/reference/koin-ktor/ktor/) - Dependency injection framework.
 - [jBCrypt](https://www.mindrot.org/projects/jBCrypt/) - Password hashing algorithm.
-- [Commons_Email](https://commons.apache.org/email/) - An API for sending email.
+- [Commons Email](https://commons.apache.org/email/) - An API for sending email.
 
 # REST API Specification
 
