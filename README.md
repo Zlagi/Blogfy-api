@@ -246,3 +246,19 @@ Authorization: Bearer KTOR_AUTH_TOKEN
   "confirmNewPassword": "newpassword"
 }
 ```
+
+## Inspiration
+
+This is project is a sample, to inspire you and should handle most of the common cases, but please take a look at
+additional resources.
+
+### Android projects
+
+Other high-quality projects will help you to find solutions that work for your project:
+
+- [NotyKT](https://github.com/PatilShreyas/NotyKT/tree/master/noty-api)
+- [KtorEasy](https://github.com/mathias21/KtorEasy)
+
+## Contribute
+
+Want to contribute? Check our [Contributing](CONTRIBUTING.md) docs.
