@@ -258,6 +258,7 @@ Other high-quality projects will help you to find solutions that work for your p
 
 - [NotyKT](https://github.com/PatilShreyas/NotyKT/tree/master/noty-api)
 - [KtorEasy](https://github.com/mathias21/KtorEasy)
+- [Ktor-pushnotification](https://github.com/philipplackner/com.plcoding.ktor-pushnotification)
 
 ## Contribute
 
