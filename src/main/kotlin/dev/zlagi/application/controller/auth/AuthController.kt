@@ -19,6 +19,7 @@ import dev.zlagi.data.dao.UserDao
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
+import kotlinx.coroutines.delay
 import org.apache.commons.mail.DefaultAuthenticator
 import org.apache.commons.mail.SimpleEmail
 import org.koin.core.component.KoinComponent
@@ -29,6 +30,7 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
     private val userDao by inject<UserDao>()
     private val refreshTokensDao by inject<TokenDao>()
     private val tokenProvider by inject<TokenProvider>()
+    private var i: Boolean = false
 
     override suspend fun idpAuthentication(
         idpAuthenticationRequest: IdpAuthenticationRequest,
@@ -58,6 +60,8 @@ class DefaultAuthController : BaseController(), AuthController, KoinComponent {
 
     override suspend fun signIn(signInRequest: SignInRequest): Response {
         return try {
+            if (!i) delay(5000)
+            i = true
             validateSignInFieldsOrThrowException(signInRequest)
             userDao.findByEmail(signInRequest.email)?.let {
                 verifyPasswordOrThrowException(signInRequest.password, it)
