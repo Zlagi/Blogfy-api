@@ -62,12 +62,6 @@ fun Route.blogApi(httpClient: HttpClient, apiKey: String) {
                 call.respond(response.code, response.body)
             }
 
-            delete("/{blogId}") {
-                val deleteBlogResponse = blogController.deleteBlog(this.context)
-                val response = generateHttpResponse(deleteBlogResponse)
-                call.respond(response.code, response.body)
-            }
-
             get("{blogId}/is_author") {
                 val checkAuthorResponse = blogController.checkBlogAuthor(this.context)
                 val response = generateHttpResponse(checkAuthorResponse)
