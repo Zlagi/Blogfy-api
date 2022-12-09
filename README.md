@@ -202,7 +202,7 @@ Authorization: Bearer KTOR_AUTH_TOKEN
 ### Delete Blog
 
 ```http
-DELETE http://localhost:8080/blog/NOTE_ID_HERE
+DELETE http://localhost:8080/blog/BLOG_ID_HERE
 Content-Type: application/json
 Authorization: Bearer KTOR_AUTH_TOKEN
 ```
