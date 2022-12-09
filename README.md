@@ -210,7 +210,7 @@ Authorization: Bearer KTOR_AUTH_TOKEN
 ### Check Blog Author
 
 ```http
-DELETE http://localhost:8080/blog/NOTE_ID_HERE/is_author
+DELETE http://localhost:8080/blog/BLOG_ID_HERE/is_author
 Content-Type: application/json
 Authorization: Bearer KTOR_AUTH_TOKEN
 ```
