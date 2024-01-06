@@ -8,6 +8,11 @@ Blogfy backend _REST API_ is built with Ktor framework with PostgreSQL as databa
 
 Currently this API is deployed on _`https://blogfy-server.herokuapp.com`_. You can try it 😃.
 
+# INFO 👓
+
+- If you want to work with your own SDK Admin Firebase take a look here:
+- https://levelup.gitconnected.com/how-to-integrate-firebase-authentication-with-ktors-auth-feature-dc2c3893a0cc
+
 # Features 👓
 
 - Authentication for email based auth.
